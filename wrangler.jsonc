@@ -1,0 +1,36 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "weather-notify",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-03-01",
+  "observability": {
+    "enabled": true,
+  },
+  "triggers": {
+    "crons": [
+      "*/10 * * * *"
+    ],
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "WEATHER_KV",
+      "id": "83b699bf49944715adf1e904f172cb77",
+    },
+  ],
+  "rules": [
+    {
+      "type": "Text",
+      "globs": [
+        "**/*.html"
+      ],
+      "fallthrough": true,
+    },
+  ],
+}

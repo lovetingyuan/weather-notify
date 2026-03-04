@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>多位置天气通知管理</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛅</text></svg>"
+    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        max-width: 900px;
+        margin: 1rem auto;
+        padding: 0 1rem;
+        color: #333;
+        line-height: 1.4;
+      }
+      h1 {
+        color: #2563eb;
+        font-size: 1.5rem;
+        margin: 0.5rem 0 1rem 0;
+      }
+      h3 {
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        font-size: 1.1rem;
+      }
+      .card {
+        border: 1px solid #e5e7eb;
+        padding: 1rem;
+        border-radius: 8px;
+        background: #f9fafb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1rem;
+      }
+      button {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      button:hover {
+        background: #1d4ed8;
+      }
+      button.danger {
+        background: #dc2626;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.75rem;
+      }
+      button.danger:hover {
+        background: #b91c1c;
+      }
+      input {
+        padding: 0.4rem;
+        margin-top: 0.2rem;
+        margin-bottom: 0.75rem;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        font-size: 0.9rem;
+      }
+      #map {
+        height: 280px;
+        width: 100%;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        margin-bottom: 0.75rem;
+        z-index: 1;
+      }
+      .hidden {
+        display: none;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      li {
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 0.6rem 0.8rem;
+        border-radius: 6px;
+        margin-bottom: 0.4rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .loc-info {
+        flex-grow: 1;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
+      .loc-info:hover {
+        background: #f3f4f6;
+      }
+      .loc-name {
+        font-weight: bold;
+        font-size: 0.95rem;
+      }
+      .loc-coords {
+        color: #6b7280;
+        font-size: 0.8rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 1rem;
+        align-items: start;
+      }
+      @media (max-width: 768px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .user-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+      p {
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+      }
+      label {
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>⛅ 多位置天气预警管理</h1>
+
+    <div class="card" id="userSection" style="max-width: 400px; margin: 2rem auto">
+      <h3>🔐 登录管理</h3>
+      <label for="username">请输入您的用户名</label>
+      <input
+        type="text"
+        id="username"
+        autofocus
+        placeholder="用户名"
+        onkeyup="if (event.key === 'Enter') login();"
+      />
+      <button onclick="login()" style="width: 100%">进入管理</button>
+    </div>
+
+    <div id="mainSection" class="hidden">
+      <div class="card user-header">
+        <h3 style="margin-bottom: 0">
+          👤 用户: <span id="displayUsername" style="color: #059669"></span>
+          <button
+            onclick="logout()"
+            style="
+              background: #6b7280;
+              padding: 0.2rem 0.5rem;
+              font-size: 0.75rem;
+              margin-left: 0.5rem;
+            "
+          >
+            切换用户
+          </button>
+        </h3>
+        <button
+          id="pushButton"
+          onclick="pushWeather()"
+          style="background: #8b5cf6; padding: 0.3rem 0.6rem; font-size: 0.85rem"
+        >
+          🚀 推送天气通知
+        </button>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>已配置的位置</h3>
+          <ul id="locationList"></ul>
+        </div>
+
+        <div class="card">
+          <h3>📍 添加新位置</h3>
+          <div style="display: flex; gap: 0.5rem; align-items: flex-end">
+            <div style="flex: 1">
+              <input
+                type="text"
+                id="locName"
+                placeholder="例如: 家 / 公司"
+                style="margin-bottom: 0"
+              />
+            </div>
+            <button
+              onclick="autoGet()"
+              style="margin-bottom: 0; background: #10b981; height: 34px"
+              title="获取当前设备位置"
+            >
+              🎯 定位
+            </button>
+          </div>
+
+          <p style="font-size: 0.8rem; color: #666; margin: 0.4rem 0">点击地图选择精确位置：</p>
+          <div id="map"></div>
+
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem">
+            <div style="flex: 1">
+              <label for="lat" style="font-size: 0.75rem">纬度</label>
+              <input type="text" id="lat" readonly style="background: #f3f4f6; margin-bottom: 0" />
+            </div>
+            <div style="flex: 1">
+              <label for="lon" style="font-size: 0.75rem">经度</label>
+              <input type="text" id="lon" readonly style="background: #f3f4f6; margin-bottom: 0" />
+            </div>
+          </div>
+
+          <button onclick="saveLocation()" style="width: 100%">💾 保存位置</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+      let currentUser = "";
+      let map;
+      let marker;
+
+      function toast(msg, type = "info") {
+        const colors = {
+          success: "#10b981",
+          error: "#ef4444",
+          info: "#3b82f6",
+          warning: "#f59e0b",
+        };
+        Toastify({
+          text: msg,
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+          style: {
+            background: colors[type] || colors.info,
+            borderRadius: "8px",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+            fontSize: "0.9rem",
+          },
+        }).showToast();
+      }
+
+      function initMap() {
+        if (map) return;
+        // Default to China center
+        map = L.map("map").setView([35.86166, 104.195397], 4);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "© OpenStreetMap contributors",
+        }).addTo(map);
+
+        map.on("click", function (e) {
+          setMarker(e.latlng.lat, e.latlng.lng);
+        });
+      }
+
+      function setMarker(lat, lng) {
+        if (marker) {
+          marker.setLatLng([lat, lng]);
+        } else {
+          marker = L.marker([lat, lng]).addTo(map);
+        }
+        document.getElementById("lat").value = lat.toFixed(6);
+        document.getElementById("lon").value = lng.toFixed(6);
+      }
+
+      function panToLocation(lat, lon, name) {
+        if (!map) return;
+        setMarker(lat, lon);
+        if (name) document.getElementById("locName").value = name;
+        map.setView([lat, lon], 13);
+        toast("地图已定位到: " + (name || lat.toFixed(4) + ", " + lon.toFixed(4)));
+      }
+
+      async function login() {
+        const val = document.getElementById("username").value.trim();
+        if (!val) return toast("请输入用户名", "warning");
+        currentUser = val;
+        localStorage.setItem("weather_user", currentUser);
+
+        document.getElementById("userSection").classList.add("hidden");
+        document.getElementById("mainSection").classList.remove("hidden");
+        document.getElementById("displayUsername").innerText = currentUser;
+
+        initMap();
+        // setTimeout to fix Leaflet rendering issue when container was hidden
+        setTimeout(() => map.invalidateSize(), 100);
+
+        await loadLocations();
+      }
+
+      function logout() {
+        currentUser = "";
+        localStorage.removeItem("weather_user");
+        document.getElementById("userSection").classList.remove("hidden");
+        document.getElementById("mainSection").classList.add("hidden");
+        document.getElementById("username").value = "";
+      }
+
+      async function loadLocations() {
+        try {
+          const res = await fetch(`/api/locations?user=${encodeURIComponent(currentUser)}`);
+          const data = await res.json();
+
+          const ul = document.getElementById("locationList");
+          ul.innerHTML = "";
+
+          if (data.length === 0) {
+            ul.innerHTML =
+              '<li><span class="loc-info" style="color:#6b7280;">暂无配置的位置</span></li>';
+            return;
+          }
+
+          data.forEach((loc) => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+				<div class="loc-info" onclick="panToLocation(${loc.lat}, ${loc.lon}, '${loc.name.replace(/'/g, "\\'")}')">
+					<div class="loc-name">🏙️ ${loc.name}</div>
+					<div class="loc-coords">纬度: ${loc.lat} | 经度: ${loc.lon}</div>
+				</div>
+				<button class="danger" onclick="deleteLocation('${loc.name.replace(/'/g, "\\'")}')">删除</button>
+			`;
+            ul.appendChild(li);
+          });
+        } catch (e) {
+          toast("加载失败: " + e.message, "error");
+        }
+      }
+
+      function autoGet() {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const lat = position.coords.latitude;
+              const lon = position.coords.longitude;
+              setMarker(lat, lon);
+              map.setView([lat, lon], 13);
+            },
+            (err) => {
+              toast("获取位置失败: " + err.message, "error");
+            },
+          );
+        } else {
+          toast("您的浏览器不支持地理位置功能", "error");
+        }
+      }
+
+      async function saveLocation() {
+        const name = document.getElementById("locName").value.trim();
+        const lat = parseFloat(document.getElementById("lat").value);
+        const lon = parseFloat(document.getElementById("lon").value);
+
+        if (!name) return toast("请输入位置名称", "warning");
+        if (isNaN(lat) || isNaN(lon)) return toast("请在地图上选择位置", "warning");
+
+        try {
+          const res = await fetch("/api/locations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user: currentUser, name, lat, lon }),
+          });
+          if (res.ok) {
+            document.getElementById("locName").value = "";
+            toast("位置保存成功！", "success");
+            loadLocations();
+          } else {
+            const data = await res.json().catch(() => ({}));
+            toast(data.error || "保存失败，请重试", "error");
+          }
+        } catch (e) {
+          toast("保存失败: " + e.message, "error");
+        }
+      }
+
+      async function deleteLocation(name) {
+        if (!confirm(`确定要删除位置 "${name}" 吗？`)) return;
+
+        try {
+          const res = await fetch("/api/locations", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user: currentUser, name }),
+          });
+          if (res.ok) {
+            loadLocations();
+          } else {
+            toast("删除失败", "error");
+          }
+        } catch (e) {
+          toast("删除失败: " + e.message, "error");
+        }
+      }
+
+      async function pushWeather() {
+        if (!currentUser) return;
+
+        const btn = document.getElementById("pushButton");
+        const originalText = btn.innerHTML;
+        const originalBg = btn.style.background;
+
+        btn.innerText = "⏳ 正在发送...";
+        btn.disabled = true;
+        btn.style.cursor = "not-allowed";
+        toast("推送频道：tingyuan-weather-alert-" + currentUser);
+
+        try {
+          const res = await fetch("/api/push", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user: currentUser }),
+          });
+          if (res.ok) {
+            btn.innerText = "✅ 推送成功！";
+            btn.style.background = "#10b981"; // emerald-500
+
+            setTimeout(() => {
+              btn.innerHTML = originalText;
+              btn.style.background = originalBg;
+              btn.disabled = false;
+              btn.style.cursor = "pointer";
+            }, 3000);
+          } else {
+            toast("推送触发失败", "error");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            btn.style.cursor = "pointer";
+          }
+        } catch (e) {
+          toast("推送触发失败: " + e.message, "error");
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          btn.style.cursor = "pointer";
+        }
+      }
+
+      // Auto login if user is in localStorage
+      window.addEventListener("DOMContentLoaded", () => {
+        const savedUser = localStorage.getItem("weather_user");
+        if (savedUser) {
+          document.getElementById("username").value = savedUser;
+          login();
+        }
+      });
+    </script>
+  </body>
+</html>
