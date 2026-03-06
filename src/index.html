@@ -1,581 +1,838 @@
 <!doctype html>
 <html lang="zh-CN">
-	<head>
-		<meta charset="utf-8" />
-		<title>天气通知管理</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="robots" content="noindex, nofollow" />
-		<link
-			rel="icon"
-			href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛅</text></svg>"
-		/>
-		<link
-			rel="stylesheet"
-			href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-		/>
-		<link
-			rel="stylesheet"
-			type="text/css"
-			href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
-		/>
-		<style>
-			body {
-				font-family:
-					system-ui,
-					-apple-system,
-					sans-serif;
-				max-width: 900px;
-				margin: 1rem auto;
-				padding: 0 1rem;
-				color: #333;
-				line-height: 1.4;
-			}
-			h1 {
-				color: #2563eb;
-				font-size: 1.5rem;
-				margin: 0.5rem 0 1rem 0;
-			}
-			h3 {
-				margin-top: 0;
-				margin-bottom: 0.75rem;
-				font-size: 1.1rem;
-			}
-			.card {
-				border: 1px solid #e5e7eb;
-				padding: 1rem;
-				border-radius: 8px;
-				background: #f9fafb;
-				box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-			}
-			button {
-				background: #2563eb;
-				color: white;
-				border: none;
-				padding: 0.4rem 0.8rem;
-				border-radius: 4px;
-				cursor: pointer;
-				font-size: 0.9rem;
-			}
-			button:hover {
-				background: #1d4ed8;
-			}
-			button.danger {
-				background: #dc2626;
-				padding: 0.2rem 0.5rem;
-				font-size: 0.75rem;
-				flex-shrink: 0;
-			}
-			button.danger:hover {
-				background: #b91c1c;
-			}
-			input {
-				padding: 0.4rem;
-				margin-top: 0.2rem;
-				margin-bottom: 0.75rem;
-				display: block;
-				width: 100%;
-				box-sizing: border-box;
-				border: 1px solid #d1d5db;
-				border-radius: 4px;
-				font-size: 0.9rem;
-			}
-			#map {
-				height: 280px;
-				width: 100%;
-				border-radius: 6px;
-				border: 1px solid #d1d5db;
-				margin-bottom: 0.75rem;
-				z-index: 1;
-			}
-			.hidden {
-				display: none;
-			}
-			ul {
-				list-style: none;
-				padding: 0;
-				margin: 0;
-			}
-			li {
-				background: white;
-				border: 1px solid #e5e7eb;
-				padding: 0.6rem 0.8rem;
-				border-radius: 6px;
-				margin-bottom: 0.4rem;
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-			}
-			.loc-info {
-				flex-grow: 1;
-				cursor: pointer;
-				padding: 2px 4px;
-				border-radius: 4px;
-				transition: background 0.2s;
-			}
-			.loc-info:hover {
-				background: #f3f4f6;
-			}
-			.loc-name {
-				font-weight: bold;
-				font-size: 0.95rem;
-			}
-			.loc-coords {
-				color: #6b7280;
-				font-size: 0.8rem;
-			}
-			.grid {
-				display: grid;
-				grid-template-columns: 1fr 1.2fr;
-				gap: 1rem;
-				align-items: start;
-			}
-			@media (max-width: 768px) {
-				.grid {
-					grid-template-columns: 1fr;
-				}
-			}
-			.user-header {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-				margin-bottom: 0.5rem;
-			}
-			p {
-				margin: 0.5rem 0;
-				font-size: 0.9rem;
-			}
-			label {
-				font-size: 0.9rem;
-				font-weight: 500;
-			}
-		</style>
-	</head>
-	<body>
-		<h1>⛅ 天气预警管理</h1>
+  <head>
+    <meta charset="utf-8" />
+    <title>天气通知管理</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛅</text></svg>"
+    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        max-width: 900px;
+        margin: 1rem auto;
+        padding: 0 1rem;
+        color: #333;
+        line-height: 1.4;
+      }
+      h1 {
+        color: #2563eb;
+        font-size: 1.5rem;
+        margin: 0.5rem 0 1rem 0;
+      }
+      h3 {
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        font-size: 1.1rem;
+      }
+      .card {
+        border: 1px solid #e5e7eb;
+        padding: 1rem;
+        border-radius: 8px;
+        background: #f9fafb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      }
+      button {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      button:hover {
+        background: #1d4ed8;
+      }
+      button.danger {
+        background: #dc2626;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.75rem;
+        flex-shrink: 0;
+      }
+      button.danger:hover {
+        background: #b91c1c;
+      }
+      input {
+        padding: 0.4rem;
+        margin-top: 0.2rem;
+        margin-bottom: 0.75rem;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        font-size: 0.9rem;
+      }
+      #map {
+        height: 280px;
+        width: 100%;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        margin-bottom: 0.75rem;
+        z-index: 1;
+      }
+      #map:-webkit-full-screen {
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      #map:-ms-fullscreen {
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      #map:fullscreen {
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      .map-fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9999 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+      }
+      .leaflet-control-fullscreen a {
+        background: #fff;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        color: black;
+        font-size: 18px;
+        border-radius: 4px;
+        cursor: pointer;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
+      }
+      .leaflet-control-fullscreen a:hover {
+        background: #f4f4f4;
+      }
+      .hidden {
+        display: none;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      li {
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 0.6rem 0.8rem;
+        border-radius: 6px;
+        margin-bottom: 0.4rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      /* Switch styles */
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 36px;
+        height: 20px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: 0.4s;
+        transition: 0.4s;
+        border-radius: 20px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        -webkit-transition: 0.4s;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      .switch input:checked + .slider {
+        background-color: #3b82f6;
+      }
+      .switch input:focus + .slider {
+        box-shadow: 0 0 1px #3b82f6;
+      }
+      .switch input:checked + .slider:before {
+        -webkit-transform: translateX(16px);
+        -ms-transform: translateX(16px);
+        transform: translateX(16px);
+      }
+      .loc-info {
+        flex-grow: 1;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
+      .loc-info:hover {
+        background: #f3f4f6;
+      }
+      .loc-name {
+        font-weight: bold;
+        font-size: 0.95rem;
+      }
+      .loc-coords {
+        color: #6b7280;
+        font-size: 0.8rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 1rem;
+        align-items: start;
+      }
+      @media (max-width: 768px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .user-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+      p {
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+      }
+      label {
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <a
+      href="https://github.com/lovetingyuan/weather-notify"
+      class="github-corner"
+      aria-label="View source on GitHub"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 250 250"
+        style="fill: #151513; color: #fff; position: absolute; top: 0; border: 0; right: 0"
+        aria-hidden="true"
+      >
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path
+          d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+          fill="currentColor"
+          style="transform-origin: 130px 106px"
+          class="octo-arm"
+        ></path>
+        <path
+          d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+          fill="currentColor"
+          class="octo-body"
+        ></path>
+      </svg>
+    </a>
+    <style>
+      .github-corner:hover .octo-arm {
+        animation: octocat-wave 560ms ease-in-out;
+      }
+      @keyframes octocat-wave {
+        0%,
+        100% {
+          transform: rotate(0);
+        }
+        20%,
+        60% {
+          transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+          transform: rotate(10deg);
+        }
+      }
+      @media (max-width: 500px) {
+        .github-corner:hover .octo-arm {
+          animation: none;
+        }
+        .github-corner .octo-arm {
+          animation: octocat-wave 560ms ease-in-out;
+        }
+      }
+    </style>
+    <h1>⛅ 天气预警管理</h1>
 
-		<div
-			class="card"
-			id="userSection"
-			style="max-width: 400px; margin: 2rem auto"
-		>
-			<h3>🔐 登录管理</h3>
-			<label for="username">请输入您的用户名</label>
-			<input
-				type="text"
-				id="username"
-				autofocus
-				placeholder="用户名"
-				onkeyup="if (event.key === 'Enter') login();"
-			/>
-			<button onclick="login()" style="width: 100%">进入管理</button>
-		</div>
+    <div class="card" id="userSection" style="max-width: 400px; margin: 2rem auto">
+      <h3>🔐 登录管理</h3>
+      <label for="username">请输入您的用户名</label>
+      <input
+        type="text"
+        id="username"
+        autofocus
+        placeholder="用户名"
+        onkeyup="if (event.key === 'Enter') login();"
+      />
+      <button onclick="login()" style="width: 100%">进入管理</button>
+    </div>
 
-		<div id="mainSection" class="hidden">
-			<div class="card user-header">
-				<h3 style="margin-bottom: 0">
-					👤 用户: <span id="displayUsername" style="color: #059669"></span>
-					<button
-						onclick="logout()"
-						style="
-							background: #6b7280;
-							padding: 0.2rem 0.5rem;
-							font-size: 0.75rem;
-							margin-left: 0.5rem;
-						"
-					>
-						切换用户
-					</button>
-				</h3>
-				<button
-					id="pushButton"
-					onclick="pushWeather()"
-					style="
-						background: #8b5cf6;
-						padding: 0.3rem 0.6rem;
-						font-size: 0.85rem;
-					"
-				>
-					🚀 推送天气通知
-				</button>
-			</div>
+    <div id="mainSection" class="hidden">
+      <div class="card user-header">
+        <h3 style="margin-bottom: 0">
+          👤 用户: <span id="displayUsername" style="color: #059669"></span>
+          <button
+            onclick="logout()"
+            style="
+              background: #6b7280;
+              padding: 0.2rem 0.5rem;
+              font-size: 0.75rem;
+              margin-left: 0.5rem;
+            "
+          >
+            切换用户
+          </button>
+        </h3>
+        <button
+          id="pushButton"
+          onclick="pushWeather()"
+          style="background: #8b5cf6; padding: 0.3rem 0.6rem; font-size: 0.85rem"
+        >
+          🚀 推送天气通知
+        </button>
+      </div>
 
-			<div class="grid">
-				<div class="card">
-					<h3>已保存的位置（最多5个）</h3>
-					<ul id="locationList"></ul>
-				</div>
+      <div class="grid">
+        <div class="card">
+          <h3>已保存的位置（最多5个）</h3>
+          <ul id="locationList"></ul>
+        </div>
 
-				<div class="card">
-					<div
-						style="
-							display: flex;
-							justify-content: space-between;
-							align-items: center;
-							margin-bottom: 0.5rem;
-						"
-					>
-						<h3 style="margin: 0">📍 添加新位置</h3>
-						<button
-							onclick="autoGet()"
-							style="
-								background: #10b981;
-								padding: 0.3rem 0.6rem;
-								font-size: 0.8rem;
-							"
-							title="获取当前设备位置"
-						>
-							🎯 定位当前
-						</button>
-					</div>
-					<div style="display: flex; gap: 0.5rem; align-items: flex-end">
-						<div style="flex: 1">
-							<input
-								type="text"
-								id="locName"
-								placeholder="输入名称或地址搜索"
-								style="margin-bottom: 0"
-								onkeyup="if (event.key === 'Enter') searchAddress();"
-							/>
-						</div>
-						<button
-							onclick="searchAddress()"
-							style="
-								margin-bottom: 0;
-								background: #3b82f6;
-								height: 31px;
-								font-size: 14px;
-							"
-							title="搜索地址"
-						>
-							🔍 搜索
-						</button>
-					</div>
+        <div class="card">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 0.5rem;
+            "
+          >
+            <h3 style="margin: 0">📍 添加新位置</h3>
+            <button
+              onclick="autoGet()"
+              style="background: #10b981; padding: 0.3rem 0.6rem; font-size: 0.8rem"
+              title="获取当前设备位置"
+            >
+              🎯 定位当前
+            </button>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: flex-end">
+            <div style="flex: 1">
+              <input
+                type="text"
+                id="locName"
+                placeholder="输入名称或地址搜索"
+                style="margin-bottom: 0"
+                onkeyup="if (event.key === 'Enter') searchAddress();"
+              />
+            </div>
+            <button
+              onclick="searchAddress()"
+              style="margin-bottom: 0; background: #3b82f6; height: 31px; font-size: 14px"
+              title="搜索地址"
+            >
+              🔍 搜索
+            </button>
+          </div>
 
-					<p style="font-size: 0.8rem; color: #666; margin: 0.4rem 0">
-						点击地图选择精确位置：
-					</p>
-					<div id="map"></div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin: 0.5rem 0;
+              margin-top: 1rem;
+            "
+          >
+            <p style="font-size: 0.8rem; color: #666; margin: 0">点击地图选择精确位置：</p>
+            <div
+              style="display: flex; align-items: center; gap: 0.4rem"
+              id="weatherSwitchContainer"
+              class="hidden"
+            >
+              <span style="font-size: 0.8rem; color: #666">🌧️ 降水云图</span>
+              <label class="switch">
+                <input type="checkbox" id="weatherLayerSwitch" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+          <div id="map"></div>
 
-					<div style="display: flex; gap: 1rem; margin-bottom: 0.5rem">
-						<div
-							style="flex: 1; display: flex; align-items: center; gap: 0.5rem"
-						>
-							<label for="lat" style="font-size: 0.75rem; white-space: nowrap"
-								>纬度</label
-							>
-							<input
-								type="text"
-								id="lat"
-								readonly
-								style="background: #f3f4f6; margin-bottom: 0; margin-top: 0"
-							/>
-						</div>
-						<div
-							style="flex: 1; display: flex; align-items: center; gap: 0.5rem"
-						>
-							<label for="lon" style="font-size: 0.75rem; white-space: nowrap"
-								>经度</label
-							>
-							<input
-								type="text"
-								id="lon"
-								readonly
-								style="background: #f3f4f6; margin-bottom: 0; margin-top: 0"
-							/>
-						</div>
-					</div>
+          <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem">
+            <div style="flex: 1; display: flex; align-items: center; gap: 0.5rem">
+              <label for="lat" style="font-size: 0.75rem; white-space: nowrap">纬度</label>
+              <input
+                type="text"
+                id="lat"
+                readonly
+                style="background: #f3f4f6; margin-bottom: 0; margin-top: 0; font-size: 0.75rem"
+              />
+            </div>
+            <div style="flex: 1; display: flex; align-items: center; gap: 0.5rem">
+              <label for="lon" style="font-size: 0.75rem; white-space: nowrap">经度</label>
+              <input
+                type="text"
+                id="lon"
+                readonly
+                style="background: #f3f4f6; margin-bottom: 0; margin-top: 0; font-size: 0.75rem"
+              />
+            </div>
+          </div>
 
-					<button onclick="saveLocation()" style="width: 100%">
-						💾 保存位置
-					</button>
-				</div>
-			</div>
-		</div>
+          <button onclick="saveLocation()" style="width: 100%">💾 保存位置</button>
+        </div>
+      </div>
+    </div>
 
-		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-		<script
-			type="text/javascript"
-			src="https://cdn.jsdelivr.net/npm/toastify-js"
-		></script>
-		<script>
-			let currentUser = "";
-			let map;
-			let marker;
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+      let currentUser = "";
+      let map;
+      let marker;
 
-			function toast(msg, type = "info") {
-				const colors = {
-					success: "#10b981",
-					error: "#ef4444",
-					info: "#3b82f6",
-					warning: "#f59e0b",
-				};
-				Toastify({
-					text: msg,
-					duration: 3000,
-					gravity: "top",
-					position: "right",
-					stopOnFocus: true,
-					style: {
-						background: colors[type] || colors.info,
-						borderRadius: "8px",
-						boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-						fontSize: "0.9rem",
-					},
-				}).showToast();
-			}
+      function toast(msg, type = "info") {
+        const colors = {
+          success: "#10b981",
+          error: "#ef4444",
+          info: "#3b82f6",
+          warning: "#f59e0b",
+        };
+        Toastify({
+          text: msg,
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          stopOnFocus: true,
+          style: {
+            background: colors[type] || colors.info,
+            borderRadius: "8px",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+            fontSize: "0.9rem",
+            zIndex: 10000,
+          },
+        }).showToast();
+      }
 
-			function initMap() {
-				if (map) return;
-				// Default to China center
-				map = L.map("map").setView([35.86166, 104.195397], 4);
-				L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-					attribution: "© OpenStreetMap contributors",
-				}).addTo(map);
+      async function initMap() {
+        if (map) return;
+        // Default to China center
+        map = L.map("map").setView([35.86166, 104.195397], 4);
+        const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "© OpenStreetMap contributors",
+        }).addTo(map);
 
-				map.on("click", function (e) {
-					setMarker(e.latlng.lat, e.latlng.lng);
-					reverseGeocode(e.latlng.lat, e.latlng.lng);
-				});
-			}
+        // 添加全屏控件
+        L.Control.FullscreenBtn = L.Control.extend({
+          onAdd: function (map) {
+            const container = L.DomUtil.create(
+              "div",
+              "leaflet-bar leaflet-control leaflet-control-fullscreen",
+            );
+            const button = L.DomUtil.create("a", "", container);
+            button.innerHTML = "⛶";
+            button.href = "#";
+            button.title = "全屏显示";
 
-			async function reverseGeocode(lat, lon) {
-				const el = document.getElementById("locName");
-				el.value = "⏳ 正在获取地址...";
-				try {
-					const res = await fetch(
-						`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
-					);
-					const data = await res.json();
-					if (data && data.display_name) {
-						el.value = data.display_name;
-					} else {
-						el.value = "";
-					}
-				} catch (e) {
-					el.value = "";
-				}
-			}
+            let isFullscreen = false;
 
-			function setMarker(lat, lng) {
-				if (marker) {
-					marker.setLatLng([lat, lng]);
-				} else {
-					marker = L.marker([lat, lng]).addTo(map);
-				}
-				document.getElementById("lat").value = lat.toFixed(6);
-				document.getElementById("lon").value = lng.toFixed(6);
-			}
+            L.DomEvent.on(button, "click", function (e) {
+              L.DomEvent.stopPropagation(e);
+              L.DomEvent.preventDefault(e);
 
-			function panToLocation(lat, lon, name) {
-				if (!map) return;
-				setMarker(lat, lon);
-				if (name) document.getElementById("locName").value = name;
-				map.setView([lat, lon], 13);
-				toast(
-					"地图已定位到: " + (name || lat.toFixed(4) + ", " + lon.toFixed(4)),
-				);
-			}
+              const mapElement = document.getElementById("map");
 
-			async function login() {
-				const val = document.getElementById("username").value.trim();
-				if (!val) return toast("请输入用户名", "warning");
-				currentUser = val;
-				localStorage.setItem("weather_user", currentUser);
+              if (!isFullscreen) {
+                if (mapElement.requestFullscreen) {
+                  mapElement.requestFullscreen();
+                } else if (mapElement.webkitRequestFullscreen) {
+                  mapElement.webkitRequestFullscreen();
+                } else if (mapElement.msRequestFullscreen) {
+                  mapElement.msRequestFullscreen();
+                } else {
+                  // Fallback for older browsers
+                  mapElement.classList.add("map-fullscreen");
+                  map.invalidateSize();
+                }
+                button.innerHTML = "✖";
+                button.title = "退出全屏";
+              } else {
+                if (document.exitFullscreen) {
+                  document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                  document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                  document.msExitFullscreen();
+                } else {
+                  // Fallback
+                  mapElement.classList.remove("map-fullscreen");
+                  map.invalidateSize();
+                }
+                button.innerHTML = "⛶";
+                button.title = "全屏显示";
+              }
+              isFullscreen = !isFullscreen;
+            });
 
-				document.getElementById("userSection").classList.add("hidden");
-				document.getElementById("mainSection").classList.remove("hidden");
-				document.getElementById("displayUsername").innerText = currentUser;
+            // 监听原生全屏退出事件（用户按ESC等）
+            document.addEventListener("fullscreenchange", handleFullscreenChange);
+            document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+            document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+            document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
-				initMap();
-				// setTimeout to fix Leaflet rendering issue when container was hidden
-				setTimeout(() => map.invalidateSize(), 100);
+            function handleFullscreenChange() {
+              const fse =
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement;
+              if (!fse) {
+                isFullscreen = false;
+                button.innerHTML = "⛶";
+                button.title = "全屏显示";
+                setTimeout(() => map.invalidateSize(), 200);
+              } else {
+                setTimeout(() => map.invalidateSize(), 200);
+              }
+            }
 
-				await loadLocations();
-			}
+            return container;
+          },
+        });
 
-			function logout() {
-				currentUser = "";
-				localStorage.removeItem("weather_user");
-				document.getElementById("userSection").classList.remove("hidden");
-				document.getElementById("mainSection").classList.add("hidden");
-				document.getElementById("username").value = "";
-			}
+        L.control.fullscreenBtn = function (opts) {
+          return new L.Control.FullscreenBtn(opts);
+        };
 
-			async function loadLocations() {
-				try {
-					const res = await fetch(
-						`/api/locations?user=${encodeURIComponent(currentUser)}`,
-					);
-					const data = await res.json();
+        L.control.fullscreenBtn({ position: "topleft" }).addTo(map);
 
-					const ul = document.getElementById("locationList");
-					ul.innerHTML = "";
+        // 添加 RainViewer 降水云图
+        try {
+          const res = await fetch("https://api.rainviewer.com/public/weather-maps.json");
+          const data = await res.json();
+          const past = data.radar.past;
 
-					if (data.length === 0) {
-						ul.innerHTML =
-							'<li><span class="loc-info" style="color:#6b7280;">暂无配置的位置</span></li>';
-						return;
-					}
+          if (past && past.length > 0) {
+            const latest = past[past.length - 1]; // 获取最新的一帧数据
+            // color scheme 2 (Universal Blue), smooth 1, snow 1
+            const weatherUrl = `${data.host}${latest.path}/256/{z}/{x}/{y}/2/1_1.png`;
+            const weatherLayer = L.tileLayer(weatherUrl, {
+              opacity: 0.6,
+              attribution:
+                "<a href='https://www.rainviewer.com/api.html' target='_blank'>RainViewer</a>",
+            });
 
-					data.forEach((loc) => {
-						const li = document.createElement("li");
-						li.innerHTML = `
+            // 显示降水云图开关
+            const switchContainer = document.getElementById("weatherSwitchContainer");
+            const weatherSwitch = document.getElementById("weatherLayerSwitch");
+
+            if (switchContainer && weatherSwitch) {
+              switchContainer.classList.remove("hidden");
+
+              weatherSwitch.addEventListener("change", (e) => {
+                if (e.target.checked) {
+                  map.addLayer(weatherLayer);
+                } else {
+                  map.removeLayer(weatherLayer);
+                }
+              });
+
+              // 默认展示云图
+              if (weatherSwitch.checked) {
+                weatherLayer.addTo(map);
+              }
+            }
+          }
+        } catch (e) {
+          console.error("加载气象云图失败:", e);
+        }
+
+        map.on("click", function (e) {
+          setMarker(e.latlng.lat, e.latlng.lng);
+          reverseGeocode(e.latlng.lat, e.latlng.lng);
+        });
+      }
+
+      async function reverseGeocode(lat, lon) {
+        const el = document.getElementById("locName");
+        el.value = "⏳ 正在获取地址...";
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+          );
+          const data = await res.json();
+          if (data && data.display_name) {
+            el.value = data.display_name;
+          } else {
+            el.value = "";
+          }
+        } catch (e) {
+          el.value = "";
+        }
+      }
+
+      function setMarker(lat, lng) {
+        if (marker) {
+          marker.setLatLng([lat, lng]);
+        } else {
+          marker = L.marker([lat, lng]).addTo(map);
+        }
+        document.getElementById("lat").value = lat.toFixed(6);
+        document.getElementById("lon").value = lng.toFixed(6);
+      }
+
+      function panToLocation(lat, lon, name) {
+        if (!map) return;
+        setMarker(lat, lon);
+        if (name) document.getElementById("locName").value = name;
+        map.setView([lat, lon], 13);
+        toast("地图已定位到: " + (name || lat.toFixed(4) + ", " + lon.toFixed(4)));
+      }
+
+      async function login() {
+        const val = document.getElementById("username").value.trim();
+        if (!val) return toast("请输入用户名", "warning");
+        currentUser = val;
+        localStorage.setItem("weather_user", currentUser);
+
+        document.getElementById("userSection").classList.add("hidden");
+        document.getElementById("mainSection").classList.remove("hidden");
+        document.getElementById("displayUsername").innerText = currentUser;
+
+        initMap();
+        // setTimeout to fix Leaflet rendering issue when container was hidden
+        setTimeout(() => map.invalidateSize(), 100);
+
+        await loadLocations();
+      }
+
+      function logout() {
+        currentUser = "";
+        localStorage.removeItem("weather_user");
+        document.getElementById("userSection").classList.remove("hidden");
+        document.getElementById("mainSection").classList.add("hidden");
+        document.getElementById("username").value = "";
+      }
+
+      async function loadLocations() {
+        try {
+          const res = await fetch(`/api/locations?user=${encodeURIComponent(currentUser)}`);
+          const data = await res.json();
+
+          const ul = document.getElementById("locationList");
+          ul.innerHTML = "";
+
+          if (data.length === 0) {
+            ul.innerHTML =
+              '<li><span class="loc-info" style="color:#6b7280;">暂无配置的位置</span></li>';
+            return;
+          }
+
+          data.forEach((loc) => {
+            const li = document.createElement("li");
+            li.innerHTML = `
 				<div class="loc-info" onclick="panToLocation(${loc.lat}, ${loc.lon}, '${loc.name.replace(/'/g, "\\'")}')">
 					<div class="loc-name">🏙️ ${loc.name}</div>
 					<div class="loc-coords">纬度: ${loc.lat} | 经度: ${loc.lon}</div>
 				</div>
 				<button class="danger" onclick="deleteLocation('${loc.name.replace(/'/g, "\\'")}')">删除</button>
 			`;
-						ul.appendChild(li);
-					});
-				} catch (e) {
-					toast("加载失败: " + e.message, "error");
-				}
-			}
+            ul.appendChild(li);
+          });
+        } catch (e) {
+          toast("加载失败: " + e.message, "error");
+        }
+      }
 
-			function autoGet() {
-				if ("geolocation" in navigator) {
-					navigator.geolocation.getCurrentPosition(
-						(position) => {
-							const lat = position.coords.latitude;
-							const lon = position.coords.longitude;
-							setMarker(lat, lon);
-							map.setView([lat, lon], 13);
-							reverseGeocode(lat, lon);
-						},
-						(err) => {
-							toast("获取位置失败: " + err.message, "error");
-						},
-					);
-				} else {
-					toast("您的浏览器不支持地理位置功能", "error");
-				}
-			}
+      function autoGet() {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const lat = position.coords.latitude;
+              const lon = position.coords.longitude;
+              setMarker(lat, lon);
+              map.setView([lat, lon], 13);
+              reverseGeocode(lat, lon);
+            },
+            (err) => {
+              toast("获取位置失败: " + err.message, "error");
+            },
+          );
+        } else {
+          toast("您的浏览器不支持地理位置功能", "error");
+        }
+      }
 
-			async function searchAddress() {
-				const query = document.getElementById("locName").value.trim();
-				if (!query) return toast("请输入地址或名称", "warning");
+      async function searchAddress() {
+        const query = document.getElementById("locName").value.trim();
+        if (!query) return toast("请输入地址或名称", "warning");
 
-				toast("正在搜索...", "info");
+        toast("正在搜索...", "info");
 
-				try {
-					const res = await fetch(
-						`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`,
-					);
-					const data = await res.json();
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`,
+          );
+          const data = await res.json();
 
-					if (data && data.length > 0) {
-						const item = data[0];
-						const lat = parseFloat(item.lat);
-						const lon = parseFloat(item.lon);
-						setMarker(lat, lon);
-						map.setView([lat, lon], 13);
-						toast("已找到: " + query, "success");
-					} else {
-						toast("未找到相关地址", "error");
-					}
-				} catch (e) {
-					toast("搜索出错: " + e.message, "error");
-				}
-			}
+          if (data && data.length > 0) {
+            const item = data[0];
+            const lat = parseFloat(item.lat);
+            const lon = parseFloat(item.lon);
+            setMarker(lat, lon);
+            map.setView([lat, lon], 13);
+            toast("已找到: " + query, "success");
+          } else {
+            toast("未找到相关地址", "error");
+          }
+        } catch (e) {
+          toast("搜索出错: " + e.message, "error");
+        }
+      }
 
-			async function saveLocation() {
-				const name = document.getElementById("locName").value.trim();
-				const lat = parseFloat(document.getElementById("lat").value);
-				const lon = parseFloat(document.getElementById("lon").value);
+      async function saveLocation() {
+        const name = document.getElementById("locName").value.trim();
+        const lat = parseFloat(document.getElementById("lat").value);
+        const lon = parseFloat(document.getElementById("lon").value);
 
-				if (!name) return toast("请输入位置名称", "warning");
-				if (isNaN(lat) || isNaN(lon))
-					return toast("请在地图上选择位置", "warning");
+        if (!name) return toast("请输入位置名称", "warning");
+        if (isNaN(lat) || isNaN(lon)) return toast("请在地图上选择位置", "warning");
 
-				try {
-					const res = await fetch("/api/locations", {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ user: currentUser, name, lat, lon }),
-					});
-					if (res.ok) {
-						document.getElementById("locName").value = "";
-						toast("位置保存成功！", "success");
-						loadLocations();
-					} else {
-						const data = await res.json().catch(() => ({}));
-						toast(data.error || "保存失败，请重试", "error");
-					}
-				} catch (e) {
-					toast("保存失败: " + e.message, "error");
-				}
-			}
+        try {
+          const res = await fetch("/api/locations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user: currentUser, name, lat, lon }),
+          });
+          if (res.ok) {
+            document.getElementById("locName").value = "";
+            toast("位置保存成功！", "success");
+            loadLocations();
+          } else {
+            const data = await res.json().catch(() => ({}));
+            toast(data.error || "保存失败，请重试", "error");
+          }
+        } catch (e) {
+          toast("保存失败: " + e.message, "error");
+        }
+      }
 
-			async function deleteLocation(name) {
-				if (!confirm(`确定要删除位置 "${name}" 吗？`)) return;
+      async function deleteLocation(name) {
+        if (!confirm(`确定要删除位置 "${name}" 吗？`)) return;
 
-				try {
-					const res = await fetch("/api/locations", {
-						method: "DELETE",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ user: currentUser, name }),
-					});
-					if (res.ok) {
-						loadLocations();
-					} else {
-						toast("删除失败", "error");
-					}
-				} catch (e) {
-					toast("删除失败: " + e.message, "error");
-				}
-			}
+        try {
+          const res = await fetch("/api/locations", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user: currentUser, name }),
+          });
+          if (res.ok) {
+            loadLocations();
+          } else {
+            toast("删除失败", "error");
+          }
+        } catch (e) {
+          toast("删除失败: " + e.message, "error");
+        }
+      }
 
-			async function pushWeather() {
-				if (!currentUser) return;
+      async function pushWeather() {
+        if (!currentUser) return;
 
-				const btn = document.getElementById("pushButton");
-				const originalText = btn.innerHTML;
-				const originalBg = btn.style.background;
+        const btn = document.getElementById("pushButton");
+        const originalText = btn.innerHTML;
+        const originalBg = btn.style.background;
 
-				btn.innerText = "⏳ 正在发送...";
-				btn.disabled = true;
-				btn.style.cursor = "not-allowed";
-				toast("推送频道：tingyuan-weather-alert-" + currentUser);
+        btn.innerText = "⏳ 正在发送...";
+        btn.disabled = true;
+        btn.style.cursor = "not-allowed";
+        toast("推送频道：tingyuan-weather-alert-" + currentUser);
 
-				try {
-					const res = await fetch("/api/push", {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ user: currentUser }),
-					});
-					if (res.ok) {
-						btn.innerText = "✅ 推送成功！";
-						btn.style.background = "#10b981"; // emerald-500
+        try {
+          const res = await fetch("/api/push", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user: currentUser }),
+          });
+          if (res.ok) {
+            btn.innerText = "✅ 推送成功！";
+            btn.style.background = "#10b981"; // emerald-500
 
-						setTimeout(() => {
-							btn.innerHTML = originalText;
-							btn.style.background = originalBg;
-							btn.disabled = false;
-							btn.style.cursor = "pointer";
-						}, 3000);
-					} else {
-						toast("推送触发失败", "error");
-						btn.innerHTML = originalText;
-						btn.disabled = false;
-						btn.style.cursor = "pointer";
-					}
-				} catch (e) {
-					toast("推送触发失败: " + e.message, "error");
-					btn.innerHTML = originalText;
-					btn.disabled = false;
-					btn.style.cursor = "pointer";
-				}
-			}
+            setTimeout(() => {
+              btn.innerHTML = originalText;
+              btn.style.background = originalBg;
+              btn.disabled = false;
+              btn.style.cursor = "pointer";
+            }, 3000);
+          } else {
+            toast("推送触发失败", "error");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            btn.style.cursor = "pointer";
+          }
+        } catch (e) {
+          toast("推送触发失败: " + e.message, "error");
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          btn.style.cursor = "pointer";
+        }
+      }
 
-			// Auto login if user is in localStorage
-			window.addEventListener("DOMContentLoaded", () => {
-				const savedUser = localStorage.getItem("weather_user");
-				if (savedUser) {
-					document.getElementById("username").value = savedUser;
-					login();
-				}
-			});
-		</script>
-	</body>
+      // Auto login if user is in localStorage
+      window.addEventListener("DOMContentLoaded", () => {
+        const savedUser = localStorage.getItem("weather_user");
+        if (savedUser) {
+          document.getElementById("username").value = savedUser;
+          login();
+        }
+      });
+    </script>
+  </body>
 </html>

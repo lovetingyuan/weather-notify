@@ -11,13 +11,9 @@
     "enabled": true,
   },
   "triggers": {
-    "crons": [
-      "*/10 * * * *"
-    ],
+    "crons": ["*/10 * * * *"],
   },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
+  "compatibility_flags": ["nodejs_compat"],
   "kv_namespaces": [
     {
       "binding": "WEATHER_KV",
@@ -27,9 +23,7 @@
   "rules": [
     {
       "type": "Text",
-      "globs": [
-        "**/*.html"
-      ],
+      "globs": ["**/*.html"],
       "fallthrough": true,
     },
   ],
