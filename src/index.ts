@@ -222,7 +222,8 @@ async function checkWeatherAndNotify(username: string, loc: Location, env: Env) 
     }
 
     if (occurrences.length > 0) {
-      const alertMessage = `${username} 你好，未来24小时不良天气预警！\n📍 地点：${loc.name}\n${occurrences.join("\n")}`;
+      const baiduWeatherUrl = `https://www.baidu.com/s?wd=${encodeURIComponent(loc.name + "天气")}`;
+      const alertMessage = `${username} 你好，未来24小时不良天气预警！\n${occurrences.join("\n")}`;
 
       await fetch("https://ntfy.sh/tingyuan-weather-alert-" + username, {
         method: "POST",
@@ -230,6 +231,7 @@ async function checkWeatherAndNotify(username: string, loc: Location, env: Env) 
         headers: {
           Title: `${loc.name} ${titleEmoji} 未来24小时天气预警`,
           Tags: "warning,weather",
+          Actions: `view, 查看百度天气, ${baiduWeatherUrl}`,
         },
       });
 
